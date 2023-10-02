@@ -1,4 +1,4 @@
-module github.com/sudhakar/Configuration
+module github.com/sudhakar1983/Configuration
 
 go 1.20
 

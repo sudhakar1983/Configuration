@@ -1,30 +1,32 @@
-package configuration
+package main
 
 //configuration
 import (
 	"bytes"
+	secretmanager "cloud.google.com/go/secretmanager/apiv1"
+	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
+	"context"
 	"encoding/json"
 	"fmt"
 	isEmpty "github.com/24COMS/go.isempty"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"golang.org/x/exp/slices"
+	"golang.org/x/oauth2/google"
+	"hash/crc32"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type Properties struct {
 	Database            database
-	Authenticator       authenticator
+	AuthenticationKeys  map[string]string
 	ConfigurationServer configuration_server
 	Configurations      configurations
 	Services            Services
 	NATS                NATS
-}
-
-type authenticator struct {
-	Key string `yaml:"Key"`
 }
 
 type configuration_server struct {
@@ -63,6 +65,8 @@ func Initialize() {
 	if err != nil {
 		panic(err)
 	}
+
+	Prop.AuthenticationKeys = map[string]string{}
 }
 
 func initializeConfiguration() *Properties {
@@ -115,6 +119,7 @@ type config_server_response struct {
 
 type configurations struct {
 	DomainAndBuckets map[string]string `json:"DomainAndBuckets"`
+	DomainSettings   map[string]Settings
 	ContactFormApi   ContactFormApi
 	SuperChatApi     SuperChatApi
 	UserApi          UserApi
@@ -141,6 +146,13 @@ type Servicesettings struct {
 	PublishToIndexer         int
 }
 
+type Settings struct {
+	BaseSecretKey            string
+	MessageExpiryInDays      int
+	EmailNotificationEnabled int
+	PublishToIndexer         int
+}
+
 func (prop *Properties) FetchServicesettings(domain string) Servicesettings {
 	return prop.Configurations.ContactFormApi.DomainAndServicesettings[domain]
 }
@@ -154,11 +166,11 @@ func LoadConfigurationFromServer(url string) (configurations, error) {
 	var serverResponse = config_server_response{}
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatalln(err)
+		log.Error().Msgf("LoadConfigurationFromServer :%v", err)
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalln(err)
+		log.Error().Msgf("LoadConfigurationFromServer :%v", err)
 		return config, err
 	}
 
@@ -182,3 +194,82 @@ func IsValidDomain(domain string, properties *Properties) bool {
 	}
 	return isValid
 }
+
+func (prop *Properties) GetSecretValue(domain string, key string) (string, error) {
+	mapKey := domain + "-" + key
+	secretValue := prop.AuthenticationKeys[mapKey]
+
+	if _, ok := prop.Configurations.DomainSettings[domain]; !ok {
+		return "", fmt.Errorf("DomainSettings is not configured for domain " + domain)
+	}
+
+	log.Debug().Msg("BaseSecretKey :" + prop.Configurations.DomainSettings[domain].BaseSecretKey)
+
+	if isEmpty.Value(secretValue) {
+		val, err := AccessSecret(prop.Configurations.DomainSettings[domain].BaseSecretKey, domain+"-"+key)
+		if err != nil {
+			return "", err
+		}
+		secretValue = val
+		prop.AuthenticationKeys[mapKey] = secretValue
+	}
+	return secretValue, nil
+}
+
+func AccessSecret(baseKey, name string) (string, error) {
+	secretValue := ""
+	// Create the client.
+	ctx := context.Background()
+
+	SECRET_KEY := strings.Replace(baseKey, "{key}", name, -1)
+
+	client, err := secretmanager.NewClient(ctx)
+	if err != nil {
+		return secretValue, fmt.Errorf("failed to create secretmanager client: %w", err)
+	}
+	defer client.Close()
+
+	// Build the request.
+	req := &secretmanagerpb.AccessSecretVersionRequest{
+		Name: SECRET_KEY,
+	}
+
+	// Call the API.
+	result, err := client.AccessSecretVersion(ctx, req)
+	if err != nil {
+		return secretValue, fmt.Errorf("failed to access secret version: %w", err)
+	}
+
+	// Verify the data checksum.
+	crc32c := crc32.MakeTable(crc32.Castagnoli)
+	checksum := int64(crc32.Checksum(result.Payload.Data, crc32c))
+	if checksum != *result.Payload.DataCrc32C {
+		return secretValue, fmt.Errorf("Data corruption detected.")
+	}
+
+	secretValue = string(result.Payload.Data)
+	return secretValue, nil
+}
+
+func main() {
+	Initialize()
+	initialize_projectid()
+	secretVal, err := Prop.GetSecretValue("knowme", "authentication-key")
+	if err != nil {
+		log.Error().Msgf("GetSecretValue error : %v", err)
+	}
+	println("secretVal :" + secretVal)
+}
+
+func initialize_projectid() {
+	ctx := context.Background()
+	computeScope := "https://www.googleapis.com/auth/compute"
+	credentials, err := google.FindDefaultCredentials(ctx, computeScope)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	println(credentials.ProjectID)
+}
+
+// APP_HOME=/Users/sudhakarduraiswamy/projects/git/GoLang/Configuration;GOOGLE_APPLICATION_CREDENTIALS=/Users/sudhakarduraiswamy/projects/git/GoLang/UserApi/.gcloud/imageapi_datastoreuser.json;PROFILE=dev

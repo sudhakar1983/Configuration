@@ -12,7 +12,6 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"golang.org/x/exp/slices"
-	"golang.org/x/oauth2/google"
 	"hash/crc32"
 	"io/ioutil"
 	"net/http"
@@ -251,25 +250,14 @@ func AccessSecret(baseKey, name string) (string, error) {
 	return secretValue, nil
 }
 
-func main() {
-	Initialize()
-	initialize_projectid()
-	secretVal, err := Prop.GetSecretValue("knowme", "authentication-key")
-	if err != nil {
-		log.Error().Msgf("GetSecretValue error : %v", err)
-	}
-	println("secretVal :" + secretVal)
-}
-
-func initialize_projectid() {
-	ctx := context.Background()
-	computeScope := "https://www.googleapis.com/auth/compute"
-	credentials, err := google.FindDefaultCredentials(ctx, computeScope)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	println(credentials.ProjectID)
-}
+//func main() {
+//	Initialize()
+//	initialize_projectid()
+//	secretVal, err := Prop.GetSecretValue("knowme", "authentication-key")
+//	if err != nil {
+//		log.Error().Msgf("GetSecretValue error : %v", err)
+//	}
+//	println("secretVal :" + secretVal)
+//}
 
 // APP_HOME=/Users/sudhakarduraiswamy/projects/git/GoLang/Configuration;GOOGLE_APPLICATION_CREDENTIALS=/Users/sudhakarduraiswamy/projects/git/GoLang/UserApi/.gcloud/imageapi_datastoreuser.json;PROFILE=dev

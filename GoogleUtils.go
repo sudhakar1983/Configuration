@@ -5,18 +5,17 @@ import (
 	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
 	"context"
 	"fmt"
-	"github.com/rs/zerolog/log"
 	"hash/crc32"
 )
 
-func main() {
-	name := "projects/286247678501/secrets/knowme-authentication-key/versions/latest"
-	secretValue, err := AccessSecretVersion(name)
-	if err != nil {
-		log.Error().Msgf("Error :%v", err)
-	}
-	log.Info().Msgf("Secret :%v", secretValue)
-}
+//func main() {
+//	name := "projects/286247678501/secrets/knowme-authentication-key/versions/latest"
+//	secretValue, err := AccessSecretVersion(name)
+//	if err != nil {
+//		log.Error().Msgf("Error :%v", err)
+//	}
+//	log.Info().Msgf("Secret :%v", secretValue)
+//}
 
 func AccessSecretVersion(name string) (string, error) {
 	secretValue := ""

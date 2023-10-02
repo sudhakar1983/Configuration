@@ -1,0 +1,10 @@
+Authenticator:
+  Key: sdfksfnskfk&%&123%&&^*
+ConfigurationServer:
+  Url: http://localhost:1111/configuration_server
+Database:
+  Url: http://localhost
+  Environment: dev
+  ProjectId: tough-fact-232020
+Services:
+  UserApi_FetchUser_Url: https://userapi-3ale7mh53q-uc.a.run.app/userapi/user

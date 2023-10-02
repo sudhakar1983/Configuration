@@ -21,7 +21,7 @@ import (
 
 type Properties struct {
 	Database            database
-	AuthenticationKeys  map[string]string
+	AuthenticationKeys  map[string]string //used to cache the secret keys
 	ConfigurationServer configuration_server
 	Configurations      configurations
 	Services            Services
@@ -147,6 +147,7 @@ type Servicesettings struct {
 
 type Settings struct {
 	BaseSecretKey            string
+	TokenValidityInMins      int
 	MessageExpiryInDays      int
 	EmailNotificationEnabled int
 	PublishToIndexer         int

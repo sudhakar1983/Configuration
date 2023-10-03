@@ -17,6 +17,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 )
 
 type Properties struct {
@@ -195,23 +196,33 @@ func IsValidDomain(domain string, properties *Properties) bool {
 	return isValid
 }
 
+var authenticationKeysMutex = &sync.RWMutex{}
+
 func (prop *Properties) GetSecretValue(domain string, key string) (string, error) {
 	mapKey := domain + "-" + key
-	secretValue := prop.AuthenticationKeys[mapKey]
 
-	if _, ok := prop.Configurations.DomainSettings[domain]; !ok {
-		return "", fmt.Errorf("DomainSettings is not configured for domain " + domain)
+	authenticationKeysMutex.RLock()
+	secretValue := prop.AuthenticationKeys[mapKey]
+	authenticationKeysMutex.RUnlock()
+	if !isEmpty.Value(secretValue) {
+		return secretValue, nil
 	}
 
-	log.Debug().Msg("BaseSecretKey :" + prop.Configurations.DomainSettings[domain].BaseSecretKey)
-
 	if isEmpty.Value(secretValue) {
+		if _, ok := prop.Configurations.DomainSettings[domain]; !ok {
+			return "", fmt.Errorf("DomainSettings is not configured for domain " + domain)
+		}
+		//log.Debug().Msg("BaseSecretKey :" + prop.Configurations.DomainSettings[domain].BaseSecretKey)
+
 		val, err := AccessSecret(prop.Configurations.DomainSettings[domain].BaseSecretKey, domain+"-"+key)
 		if err != nil {
 			return "", err
 		}
 		secretValue = val
+
+		authenticationKeysMutex.Lock()
 		prop.AuthenticationKeys[mapKey] = secretValue
+		authenticationKeysMutex.Unlock()
 	}
 	return secretValue, nil
 }

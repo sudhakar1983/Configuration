@@ -147,11 +147,12 @@ type Servicesettings struct {
 }
 
 type Settings struct {
-	BaseSecretKey            string
-	TokenValidityInMins      int
-	MessageExpiryInDays      int
-	EmailNotificationEnabled int
-	PublishToIndexer         int
+	BaseSecretKey                string
+	TokenValidityInMins          int
+	MessageExpiryInDays          int
+	EmailNotificationEnabled     int
+	PublishToIndexer             int
+	EnableUsrTokenAuthentication int
 }
 
 func (prop *Properties) FetchServicesettings(domain string) Servicesettings {

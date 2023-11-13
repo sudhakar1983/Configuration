@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-type configurations struct {
+type ConfigurationService struct {
 	DomainAndBuckets map[string]string `json:"DomainAndBuckets"`
 	DomainSettings   map[string]Settings
 	ContactFormApi   ContactFormApi
@@ -47,11 +47,11 @@ type Settings struct {
 }
 
 type config_server_response struct {
-	Response configurations `json:"Response"`
+	Response ConfigurationService `json:"Response"`
 }
 
-func LoadConfigurationFromServer(url string) (configurations, error) {
-	var config = configurations{}
+func LoadConfigurationFromServer(url string) (ConfigurationService, error) {
+	var config = ConfigurationService{}
 	var serverResponse = config_server_response{}
 	resp, err := http.Get(url)
 	if err != nil {

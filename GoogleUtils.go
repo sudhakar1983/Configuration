@@ -1,4 +1,4 @@
-package Configuration
+package ServerConfig
 
 import (
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"

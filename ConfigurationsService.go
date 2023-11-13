@@ -1,8 +1,9 @@
-package Configuration
+package ServerConfig
 
 import (
 	"encoding/json"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/exp/slices"
 	"io/ioutil"
 	"net/http"
 )
@@ -70,4 +71,8 @@ func LoadConfigurationFromServer(url string) (ConfigurationService, error) {
 		return config, err
 	}
 	return config, err
+}
+
+func IsValidDomain(domain string, validDomainsForTheService []string) bool {
+	return slices.Contains(validDomainsForTheService, domain)
 }

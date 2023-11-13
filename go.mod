@@ -1,4 +1,4 @@
-module github.com/sudhakar1983/Configuration/v2
+module github.com/sudhakar1983/ServerConfig
 
 go 1.20
 
@@ -21,9 +21,10 @@ require (
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/crypto v0.9.0 // indirect
+	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
-	golang.org/x/sys v0.12.0 // indirect
+	golang.org/x/sys v0.14.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
 	google.golang.org/api v0.122.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect

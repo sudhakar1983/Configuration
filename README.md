@@ -2,10 +2,10 @@
 
 
 
-version=v2.0.1 && \
+version=v2.0.2 && \
 git tag $version && git push origin $version
 
-go get github.com/sudhakar1983/Configuration/v2@v2.0.0
+go get github.com/sudhakar1983/Configuration/v2@v2.0.1
 
 
 git tag -d $version

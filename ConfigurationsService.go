@@ -1,6 +1,8 @@
 package ServerConfig
 
 import (
+	"crypto/sha1"
+	"encoding/base64"
 	"encoding/json"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/exp/slices"
@@ -76,4 +78,9 @@ func LoadConfigurationFromServer(url string) (ConfigurationService, error) {
 
 func IsValidDomain(domain string, validDomainsForTheService []string) bool {
 	return slices.Contains(validDomainsForTheService, domain)
+}
+
+func GenerateCheckSum(configJsonStr string) string {
+	sha1 := sha1.Sum([]byte(configJsonStr))
+	return base64.StdEncoding.EncodeToString(sha1[:])
 }

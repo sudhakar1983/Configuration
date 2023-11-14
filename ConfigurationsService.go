@@ -14,6 +14,7 @@ type ConfigurationService struct {
 	ContactFormApi   ContactFormApi
 	SuperChatApi     SuperChatApi
 	UserApi          UserApi
+	CheckSum         string
 }
 
 type ContactFormApi struct {
